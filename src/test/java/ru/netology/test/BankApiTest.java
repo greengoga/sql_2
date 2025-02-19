@@ -1,55 +1,82 @@
 package ru.netology.test;
 
-import io.restassured.RestAssured;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.filter.log.LogDetail;
-import io.restassured.http.ContentType;
-import io.restassured.parsing.Parser;
 import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import ru.netology.data.SQLHelper;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.netology.data.APIHelper.*;
+
 
 public class BankApiTest {
-
     private static String token;
 
-    @BeforeAll
-    static void setUp() {
-        RequestSpecification requestSpec = new RequestSpecBuilder()
-                .setBaseUri("http://localhost")
-                .setPort(9999)
-                .setAccept(ContentType.JSON)
-                .setContentType(ContentType.JSON)
-                .log(LogDetail.ALL)
-                .build();
+    @BeforeEach
+    void setUp() {
+        String authToken = authenticate("vasya", "qwerty123");
+        assertNotNull(authToken, "Токен аутентификации не должен быть null");
+
+        String verificationCode = SQLHelper.getVerificationCode("vasya");
+        assertNotNull(verificationCode, "Код верификации не должен быть null");
+
+        token = verify("vasya", verificationCode);
+        assertNotNull(token, "Токен верификации не должен быть null");
     }
 
     @Test
-    @DisplayName("Успешная авторизация")
-    void shouldAuthenticateSuccessfully() {
-        given()
-                .baseUri("http://localhost:9999")
-                .contentType("application/json")
-                .body("{ \"login\": \"vasya\", \"password\": \"qwerty123\" }")
-                .when()
-                .post("/api/auth")
-                .then()
-                .statusCode(200);
+    void shouldGetCards() {
+        Response response = getCards(token);
+        assertNotNull(response, "Ответ не должен быть null");
     }
+
     @Test
-    @DisplayName("Успешная верификация")
-    void shouldVerifySuccessfully() {
-        given()
-                .baseUri("http://localhost:9999")
-                .contentType("application/json")
-                .body("{ \"login\": \"vasya\", \"code\": \"599640\" }")
-                .when()
-                .post("/api/auth/verification")
-                .then()
-                .statusCode(200);
+    void shouldTransferMoney() {
+        Response response = transferMoney(token, "5559 0000 0000 0002", "5559 0000 0000 0008", 5000);
+        assertNotNull(response, "Ответ на перевод не должен быть null");
+        assertEquals("ok", response.path("status"), "Перевод должен быть успешным");
+
+        int balanceFrom = SQLHelper.getCardBalance("5559 0000 0000 0002");
+        int balanceTo = SQLHelper.getCardBalance("5559 0000 0000 0008");
+        assertTrue(balanceFrom >= 0, "Баланс отправителя не может быть отрицательным");
+        assertTrue(balanceTo >= 5000, "Получатель должен получить средства");
     }
 }
+
+
+//package ru.netology.test;
+//
+//import io.restassured.RestAssured;
+//import io.restassured.parsing.Parser;
+//import io.restassured.response.Response;
+//import org.junit.jupiter.api.BeforeEach;
+//import org.junit.jupiter.api.Test;
+//import static org.junit.jupiter.api.Assertions.*;
+//import static ru.netology.data.APIHelper.*;
+//import static ru.netology.data.SQLHelper.getVerificationCode;
+//
+//public class BankApiTest {
+//
+//    private static String token;
+//
+//    @BeforeEach
+//    void setUp() {
+//        token = authenticate("vasya", "qwerty123");
+//        assertNotNull(token, "Токен аутентификации не должен быть null");
+//        token = verify(getVerificationCode("vasya"));
+//        assertNotNull(token, "Токен верификации не должен быть null");
+//    }
+//
+//    @Test
+//    void shouldGetCards() {
+//        Response response = getCards(token);
+//        assertNotNull(response, "Ответ не должен быть null");
+//    }
+//
+//    @Test
+//    void shouldTransferMoney() {
+//        Response response = transferMoney(token, "5559 0000 0000 0002", "5559 0000 0000 0008", 5000);
+//        assertNotNull(response, "Ответ на перевод не должен быть null");
+//        assertEquals(response.path("status"), "ok", "Перевод должен быть успешным");
+//    }
+//}
