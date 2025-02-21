@@ -7,6 +7,23 @@ public class DataHelper {
     private DataHelper() {
     }
 
+
+    public static String getFirstCardNumber() {
+        return "5559 0000 0000 0002";
+    }
+
+    public static String getSecondCardNumber() {
+        return "5559 0000 0000 0008";
+    }
+
+    public static int calculateTransferAmount(int balance) {
+        return balance / 2;
+    }
+
+//    public static int calculateTransferAmount(int balance, double percentage) {
+//        return (int) (balance * percentage);
+//    }
+
     @Data
     @AllArgsConstructor
     public static class AuthRequest {

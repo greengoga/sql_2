@@ -52,8 +52,23 @@ public class APIHelper {
                 .response();
     }
 
-    public static Response transferMoney(String token, String from, String to, int amount) {
-        return given()
+    public static int getCardBalance(String token, String cardNumber) {
+        Response response = given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + token)
+                .when()
+                .get(BASE_URL + "/api/cards")
+                .then()
+                .log().all()
+                .statusCode(200)
+                .extract()
+                .response();
+
+        return response.path("find { it.number == '" + cardNumber + "' }.balance");
+    }
+
+    public static int transferMoney(String token, String from, String to, int amount) {
+        Response response = given()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
                 .body(new DataHelper.TransferRequest(from, to, amount))
@@ -64,5 +79,7 @@ public class APIHelper {
                 .statusCode(200)
                 .extract()
                 .response();
+
+        return response.path("new_balance");
     }
 }
