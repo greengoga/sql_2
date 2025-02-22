@@ -24,7 +24,7 @@ public class SQLHelper {
     }
 
     public static int getCardBalance(String cardNumber) {
-        String sql = "SELECT balance FROM cards WHERE number = ?";
+        String sql = "SELECT balance_in_kopecks FROM cards WHERE number = ?";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             return new QueryRunner().query(conn, sql, new ScalarHandler<>(), cardNumber);
         } catch (SQLException e) {

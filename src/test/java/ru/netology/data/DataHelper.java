@@ -20,10 +20,6 @@ public class DataHelper {
         return balance / 2;
     }
 
-//    public static int calculateTransferAmount(int balance, double percentage) {
-//        return (int) (balance * percentage);
-//    }
-
     @Data
     @AllArgsConstructor
     public static class AuthRequest {

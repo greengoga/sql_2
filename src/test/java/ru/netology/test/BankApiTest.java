@@ -35,14 +35,18 @@ public class BankApiTest {
         String fromCard = DataHelper.getFirstCardNumber();
         String toCard = DataHelper.getSecondCardNumber();
 
-        int initialBalanceFrom = getCardBalance(token, fromCard);
-        int initialBalanceTo = getCardBalance(token, toCard);
+        int initialBalanceFrom = SQLHelper.getCardBalance(fromCard);
+        int initialBalanceTo = SQLHelper.getCardBalance(toCard);
         assertNotNull(initialBalanceFrom, "Баланс отправителя не должен быть null");
         assertNotNull(initialBalanceTo, "Баланс получателя не должен быть null");
 
         int transferAmount = DataHelper.calculateTransferAmount(initialBalanceFrom);
-//        int transferAmount = DataHelper.calculateTransferAmount(initialBalanceFrom, 0.25);
-        int newBalanceFrom = transferMoney(token, fromCard, toCard, transferAmount);        int newBalanceTo = getCardBalance(token, toCard);
+
+        transferMoney(token, fromCard, toCard, transferAmount);
+
+        int newBalanceFrom = SQLHelper.getCardBalance(fromCard);
+        int newBalanceTo = SQLHelper.getCardBalance(toCard);
+
         assertEquals(initialBalanceFrom - transferAmount, newBalanceFrom, "Баланс отправителя должен уменьшиться");
         assertEquals(initialBalanceTo + transferAmount, newBalanceTo, "Баланс получателя должен увеличиться");
     }
