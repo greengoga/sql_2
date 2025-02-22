@@ -64,11 +64,17 @@ public class APIHelper {
                 .extract()
                 .response();
 
-        return response.path("find { it.number == '" + cardNumber + "' }.balance");
+        Integer balance = response.path("find { it.number == '" + cardNumber + "' }.balance");
+
+        if (balance == null) {
+            throw new IllegalStateException("Ошибка: карта " + cardNumber + " не найдена в API!");
+        }
+
+        return balance;
     }
 
-    public static int transferMoney(String token, String from, String to, int amount) {
-        Response response = given()
+    public static void transferMoney(String token, String from, String to, int amount) {
+        given()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Bearer " + token)
                 .body(new DataHelper.TransferRequest(from, to, amount))
@@ -79,7 +85,5 @@ public class APIHelper {
                 .statusCode(200)
                 .extract()
                 .response();
-
-        return response.path("new_balance");
     }
 }

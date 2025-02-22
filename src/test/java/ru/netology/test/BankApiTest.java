@@ -35,19 +35,25 @@ public class BankApiTest {
         String fromCard = DataHelper.getFirstCardNumber();
         String toCard = DataHelper.getSecondCardNumber();
 
-        int initialBalanceFrom = SQLHelper.getCardBalance(fromCard);
-        int initialBalanceTo = SQLHelper.getCardBalance(toCard);
-        assertNotNull(initialBalanceFrom, "Баланс отправителя не должен быть null");
-        assertNotNull(initialBalanceTo, "Баланс получателя не должен быть null");
+        int fromKopecksBefore = SQLHelper.getCardBalance(fromCard);
+        int toKopecksBefore = SQLHelper.getCardBalance(toCard);
 
-        int transferAmount = DataHelper.calculateTransferAmount(initialBalanceFrom);
+        int fromRubBefore = fromKopecksBefore / 100;  // например, 10_000 руб., если 1_000_000 копеек
+        int toRubBefore = toKopecksBefore / 100;
 
-        transferMoney(token, fromCard, toCard, transferAmount);
+        int transferRub = fromRubBefore / 2; // половина баланса отправителя
 
-        int newBalanceFrom = SQLHelper.getCardBalance(fromCard);
-        int newBalanceTo = SQLHelper.getCardBalance(toCard);
+        transferMoney(token, fromCard, toCard, transferRub);
 
-        assertEquals(initialBalanceFrom - transferAmount, newBalanceFrom, "Баланс отправителя должен уменьшиться");
-        assertEquals(initialBalanceTo + transferAmount, newBalanceTo, "Баланс получателя должен увеличиться");
+        int fromKopecksAfter = SQLHelper.getCardBalance(fromCard);
+        int toKopecksAfter = SQLHelper.getCardBalance(toCard);
+
+        int fromRubAfter = fromKopecksAfter / 100;
+        int toRubAfter = toKopecksAfter / 100;
+
+        assertEquals(fromRubBefore - transferRub, fromRubAfter,
+                "Баланс отправителя должен уменьшиться на сумму перевода в рублях");
+        assertEquals(toRubBefore + transferRub, toRubAfter,
+                "Баланс получателя должен увеличиться на сумму перевода в рублях");
     }
 }

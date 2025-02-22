@@ -13,7 +13,7 @@ public class DataHelper {
     }
 
     public static String getSecondCardNumber() {
-        return "5559 0000 0000 0008";
+        return "5559 0000 0000 0001";
     }
 
     public static int calculateTransferAmount(int balance) {
